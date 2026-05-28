@@ -1,6 +1,7 @@
 package com.ulutman.controller;
 
 import com.ulutman.exception.NotFoundException;
+import com.ulutman.model.dto.MailingRequest;
 import com.ulutman.model.dto.MailingResponse;
 import com.ulutman.model.entities.User;
 import com.ulutman.model.enums.MailingStatus;
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,16 +25,27 @@ import java.util.List;
 @RequestMapping("/api/manage/mailing")
 @Tag(name = "Manage Mailing")
 @SecurityRequirement(name = "Authorization")
+@Slf4j
 public class ManageMailingController {
 
     private final ManageMailingService manageMailingService;
+    @Operation(summary = "Create mailing and send to all users")
+    @ApiResponse(
+            responseCode = "200",
+            description = "Mailing created and sent successfully"
+    )
+    @PostMapping("/create-and-send")
+    public ResponseEntity<MailingResponse> createAndSendToAll(
+            @RequestBody MailingRequest request
+    ) {
 
-    @Operation(summary = "Send to all users")
-    @ApiResponse(responseCode = "201", description = "A mailing sent to all users ")
-    @PostMapping("/send-to-all")
-    public ResponseEntity<String> sendMailingToAllUsers(@RequestParam("mailingId") Long mailingId) {
-        manageMailingService.sendMailingToAllUsers(mailingId);
-        return ResponseEntity.ok("Рассылка успешно отправлена всем пользователям.");
+        log.info("Admin created mailing and sent to all users");
+
+        MailingResponse response =
+                manageMailingService
+                        .createMailingAndSendToAll(request);
+
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Get all users mailing")
